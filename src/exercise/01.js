@@ -3,18 +3,16 @@
 
 import * as React from 'react'
 import {Suspense} from 'react'
-import {fetchPokemon, PokemonDataView} from '../pokemon'
+import {fetchPokemon, PokemonDataView, PokemonErrorBoundary} from '../pokemon'
+import {PokemonInfoFallback} from '../pokemon'
+import {createResource} from '../utils'
 
-let pokemon
-
-const pokemonPromise = fetchPokemon('pikachu').then(pokemonData => {
-  pokemon = pokemonData
-})
+const pokemonResource = createResource(fetchPokemon('pikachu'))
 
 function PokemonInfo() {
-  if (!pokemon) {
-    throw pokemonPromise
-  }
+  const pokemon = pokemonResource.read()
+
+  console.log(pokemon)
 
   return (
     <div>
@@ -30,9 +28,11 @@ function App() {
   return (
     <div className="pokemon-info-app">
       <div className="pokemon-info">
-        <Suspense fallback={<div>Loading</div>}>
-          <PokemonInfo />
-        </Suspense>
+        <PokemonErrorBoundary>
+          <Suspense fallback={PokemonInfoFallback}>
+            <PokemonInfo />
+          </Suspense>
+        </PokemonErrorBoundary>
       </div>
     </div>
   )
